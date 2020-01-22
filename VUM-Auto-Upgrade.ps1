@@ -5,9 +5,11 @@ $myBaselineGroup = "Nimble|UCS Driver|Critical" # Host Baselines to include
 
 If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter administrator credential:"}
 
+If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter administrator credential:"}
+
 # Connect To vCenter
 Connect-VIServer -Server $myvCenterServer -Credential $myCredential #-AllLinked:$true
-# Get a list of hosts that are connected or in maintanenance mode
+# Get a list of hosts that are connected or in maintenance mode
 $myVMHosts = Get-VMHost -Name $myHostFilter -Server * | Where-Object {$_.ConnectionState -match "Maintenance|Connected"} | Sort-Object -Property $_.Name
 # Get the Alarm Manager
 $myAlarmManager = Get-View AlarmManager
@@ -15,7 +17,7 @@ $myAlarmManager = Get-View AlarmManager
 ForEach ($vmHost in $myVMHosts) {
 	$myRDMs = $null
 	## Get RDMs
-	$myRDMs = Get-VM -Location $vmHost | Get-HardDisk | where{$_.DiskType -match '^Raw'} | Select -ExpandProperty ScsiCanonicalName -First 1
+	$myRDMs = Get-VM -Location $vmHost | Get-HardDisk | Where-Object {$_.DiskType -match '^Raw'} | Select-Object -ExpandProperty ScsiCanonicalName -First 1
 	## If it has RDMs, we're probably housing a Windows cluster.
 	If ($myRDMs) {
 		###  Skip the host until we can verify the node is not active.
@@ -23,9 +25,9 @@ ForEach ($vmHost in $myVMHosts) {
 		continue 
 	}
 	## No, RDMs.
-	## Check for patchs
+	## Check for patches
 	Write-Host "($($vmHost.Name)) Patching..."
-	## Get the Host baselines specificed in $myBaselineGroup
+	## Get the Host baselines specified in $myBaselineGroup
 	$myBaseline = Get-Baseline -TargetType Host | Where-Object {$_.Name -match $myBaselineGroup}
 	## Check compliance for the baselines
 	$myCompliance = Get-Compliance -Entity $vmHost -Baseline $myBaseline
@@ -54,12 +56,12 @@ ForEach ($vmHost in $myVMHosts) {
 		$myAlarmManager.EnableAlarmActions($vmHost.ExtensionData.MoRef,$true)
 		### Record a log item stating the patch date
 		Add-Content "$($vmHost.Name),$((Get-date -Format yyyy-MM-dd))" -Path $myPatchedHosts
-    } else {
+    	} else {
 		## else, Host is compliant with all baselines, no patches available
 		Write-Host "($($vmHost.Name)) No patches available."
 	}
-	## We're done with this host, tell the user and allow them to proceed.
-    Write-Host "($($vmHost.Name)) All tasks complete."
+	## We're done with this host, tell the user and allow them to proceed
+	Write-Host "($($vmHost.Name)) All tasks complete."
 	Read-Host -Prompt "Press Enter to continue..." ####
 }
 
