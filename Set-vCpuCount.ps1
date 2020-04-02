@@ -1,7 +1,7 @@
 ## Are we just testing?
 $whatIf = $true
 ## vCenter Server(s) to connect
-$vCenterServer = "vc1.domain.example","vc1.domain.example"
+$vCenterServer = "vc1.domain.example","vc2.domain.example"
 ## VM names to modify
 $VMInclude = "BW-Test*"
 ## Total number of vCPU you'd like
