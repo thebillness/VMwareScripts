@@ -15,9 +15,9 @@ Param(
 ## vCenter Server(s) to connect
 If (-not $vCenterServer) {$vCenterServer = "vc1.domain.example","vc2.domain.example"}
 ## VM names to modify
-If (-not $VMInclude)     {$VMInclude = "BW-Test*"}
+If (-not $VMInclude) {$VMInclude = "BW-Test*"}
 ## Get vCenter Credential
-If (-not $myCredential)  {$myCredential = Get-Credential -Message "vCenter Server credentail?"}
+If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter Server credentail?"}
 
 ## Connect to vCenter Server(s)
 try {
