@@ -1,18 +1,32 @@
-## Are we just testing?
-$whatIf = $true
+Param(
+    ## Are we just testing?
+    [bool]$whatIf = $true,
+    ## vCenter Server(s) to connect
+    [string[]]$vCenterServer,
+    ## VM names to modify
+    [string[]]$VMInclude,
+    ## Total number of vCPU you'd like
+    [int]$TotalvCPU = 5,
+    ## Boot the VM when we're done?
+    [Bool]$BootVM = $false
+    
+)
+
 ## vCenter Server(s) to connect
-$vCenterServer = "vc1.domain.example","vc2.domain.example"
+If (-not $vCenterServer) {$vCenterServer = "vc1.domain.example","vc2.domain.example"}
 ## VM names to modify
-$VMInclude = "BW-Test*"
-## Total number of vCPU you'd like
-$TotalvCPU = 5
-## Boot the VM when we're done?
-$BootVM = $false
+If (-not $VMInclude) {$VMInclude = "BW-Test*"}
 ## Get vCenter Credential
 If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter Server credentail?"}
 
 ## Connect to vCenter Server(s)
-Connect-VIServer -Server $vCenterServer -Credential $myCredential -ErrorAction Stop
+try {
+    Connect-VIServer -Server $vCenterServer -Credential $myCredential -ErrorAction Stop
+} catch { 
+    Write-Error "Could not connect to vCenter!"
+    exit 1
+}
+
 Write-Host "Gathering VMs..."
 $TargetVMs = Get-VM -Name $VMInclude -Server * | Where-Object {$_.PowerState -eq "PoweredOff" -and $_.NumCpu -ne $TotalvCPU} | Sort-Object -Property Name
 If (-not $TargetVMs) {Write-Output "No VMs match current filters. (Name = $VMInclude, vCPUs != $TotalvCPU, Powered Off)"; exit 1}
@@ -35,7 +49,7 @@ Write-Output "$TheTime - Starting..."
 
 If ($whatIf) {
     ## If testing, say what will happen
-    $TargetVMs | % {Write-Output "[WhatIf] $($_.Name) - Set vCPU from $($_.NumCpu) to $TotalvCPU"}
+    $TargetVMs | ForEach-Object {Write-Output "[WhatIf] $($_.Name) - Set vCPU from $($_.NumCpu) to $TotalvCPU"}
 } else {
     ## if not testing, execute the vCPU change
     $DestinationVMs = $TargetVMs | Set-VM -NumCpu $TotalvCPU -Confirm:$false -ErrorAction SilentlyContinue | Sort-Object -Property Name
