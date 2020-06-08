@@ -9,5 +9,6 @@ $myAlarmManager = Get-View AlarmManager
 ## For Each $VMHost
 ForEach ($targetHost in $VMHost) {
     ## Set the Alarm Managager to enabled/disabled for the requested VMHost
+    Write-Host "$($targetHost.Name) Setting Host Alarm actions to Enabled: $enabled"
     $myAlarmManager.EnableAlarmActions($targetHost.ExtensionData.MoRef,$Enabled)
 }
