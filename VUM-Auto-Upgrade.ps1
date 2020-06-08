@@ -5,8 +5,6 @@ $myBaselineGroup = "Nimble|UCS Driver|Critical" # Host Baselines to include
 
 If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter administrator credential:"}
 
-If (-not $myCredential) {$myCredential = Get-Credential -Message "vCenter administrator credential:"}
-
 # Connect To vCenter
 Connect-VIServer -Server $myvCenterServer -Credential $myCredential #-AllLinked:$true
 # Get a list of hosts that are connected or in maintenance mode
@@ -47,6 +45,11 @@ ForEach ($vmHost in $myVMHosts) {
 		### Install patches
 		Write-Host "($($vmHost.Name)) Installing patches..."
 		Update-Entity -Baseline $myBaseline -Entity $VMHost -ClusterDisableHighAvailability:$true -Confirm:$false
+		### Wait until the host is in Maintenance mode
+		Write-Host "($($vmHost.Name)) Waiting for the host to return..."
+		While ((Get-VMHost -Name $vmHost.Name -Server *).ConnectionState -ne "Maintenance") {
+			Start-Sleep -Seconds 1
+		}
 		### Installation complete
 		Write-Host "($($vmHost.Name)) Installation complete."
 		### Disable maintenance mode
