@@ -5,8 +5,8 @@ Param(
     [string[]]$vCenterServer,
     ## VM names to modify
     [string[]]$VMInclude,
-    ## Total number of vCPU you'd like
-    [int]$TotalvCPU = 5,
+    ## Guest OS ID
+    [int]$GuestID = "windows9Server64Guest",
     ## Boot the VM when we're done?
     [Bool]$BootVM = $false
     
@@ -28,10 +28,10 @@ try {
 }
 
 Write-Host "Gathering VMs..."
-$TargetVMs = Get-VM -Name $VMInclude -Server * | Where-Object {$_.PowerState -eq "PoweredOff" -and $_.NumCpu -ne $TotalvCPU} | Sort-Object -Property Name
-If (-not $TargetVMs) {Write-Output "No VMs match current filters. (Name = $VMInclude, vCPUs != $TotalvCPU, Powered Off)"; exit 1}
+$TargetVMs = Get-VM -Name $VMInclude -Server * | Where-Object {$_.PowerState -eq "PoweredOff" -and $_.GuestId -ne $GuestID} | Sort-Object -Property Name
+If (-not $TargetVMs) {Write-Output "No VMs match current filters. (Name = $VMInclude, GuestOS != $GuestID, Powered Off)"; exit 1}
 ## Report filter information and VM Count to user
-Write-Output "Filter Information: VM Name = $VMInclude, vCPUs != $TotalvCPU, Powered Off, Testing = $whatIf"
+Write-Output "Filter Information: VM Name = $VMInclude, GuestOS != $GuestID, Powered Off, Testing = $whatIf"
 ## Double opt-in (Run script, confirm execution)
 If ($whatIf) {$makeItHappen = Read-Host "Preparing to TEST $($TargetVMs.Count) VM(s). Continue? [y/N]"}
 else {

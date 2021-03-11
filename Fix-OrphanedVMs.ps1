@@ -6,7 +6,8 @@ Param(
 )
 
 # Get a View of all the VMs with an orphaned connection state
-$myView = Get-View -ViewType VirtualMachine | Where-Object {$_.Runtime.ConnectionState -eq "orphaned"}
+#$myView = Get-View -ViewType VirtualMachine | Where-Object {$_.Runtime.ConnectionState -eq "orphaned"}
+$myView = Get-View -ViewType VirtualMachine | Where-Object {$_.Runtime.ConnectionState -eq "inaccessible"}
 # Assemble the needed data from each VM in the view
 $myVMs = $myView | % {Get-VM -Name $_.Name |Select-Object Name,VMHost,FolderID,@{E={$_.ExtensionData.Config.Files.VmPathName};L="VMXPath"}}
 # Tell the user what we're about to do
